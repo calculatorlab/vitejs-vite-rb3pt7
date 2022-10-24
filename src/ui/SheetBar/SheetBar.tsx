@@ -1,18 +1,16 @@
-import React, { useState, useRef } from 'react';
-import classnames from 'classnames';
+import React, { useState, useRef } from "react";
 
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import AddCircleIcon from "@mui/icons-material/AddCircle";
 
-import Tabs from '@mui/material/Tabs';
+import Scroller from "./Scroller";
+import SheetTab from "./SheetTab";
 
 type Sheet = {
   name: string;
   selected: boolean;
 };
 
-const SheetBar: React.FC = () => {
+const SheetBar: React.FC = (): JSX.Element => {
   const sheetTabContainerRef = useRef<HTMLDivElement>(null);
   const sheets: Sheet[] = [];
   const [sheetCounter, setSheetCounter] = useState<number>(0);
@@ -27,11 +25,17 @@ const SheetBar: React.FC = () => {
     updatedSheetDB.push(newSheet);
     setSheetDB(updatedSheetDB);
   };
-  const selectSheet = (currentSheetName: string): void => {
+  const selectSheet = (
+    currentSheetName: string,
+    sheetContainerRef: React.RefObject<HTMLDivElement>
+  ): void => {
     const updatedSheetDB: Sheet[] = sheetDB.map((s) => {
       return { ...s, selected: s.name === currentSheetName };
     });
     setSheetDB(updatedSheetDB);
+    sheetContainerRef.current?.scrollTo({
+      left: sheetContainerRef.current.scrollWidth,
+    });
   };
   console.log(sheetTabContainerRef.current);
   return (
@@ -40,50 +44,28 @@ const SheetBar: React.FC = () => {
       <div
         ref={sheetTabContainerRef}
         id="temp"
-        className="flex-auto flex border-solid border-2 border-gray-300"
+        className="flex-auto flex border-solid border-2 border-gray-300 overflow-x-auto"
       >
         {sheetDB.map((s) => (
           <SheetTab
             key={s.name}
             selected={s.selected}
             name={s.name}
-            onClick={() => selectSheet(s.name)}
+            onClick={() => selectSheet(s.name, sheetTabContainerRef)}
           />
         ))}
-        <span className="flex-none px-2.5 text-green-800 hover:scale-110">
-          <AddCircleIcon onClick={addSheet} />
-        </span>
+        <AddSheetButton addSheetFn={addSheet} />
       </div>
     </div>
   );
 };
 
-const Scroller: React.FC = () => (
-  <div className="flex-none flex items-center">
-    <span className="px-2.5 hover:bg-gray-300">
-      <ArrowLeftIcon />
-    </span>
-    <span className="px-2.5 hover:bg-gray-300">
-      <ArrowRightIcon />
-    </span>
-  </div>
+const AddSheetButton: React.FC<{ addSheetFn: () => void }> = ({
+  addSheetFn,
+}) => (
+  <span className="flex-none px-2.5 text-green-800 hover:scale-110">
+    <AddCircleIcon onClick={addSheetFn} />
+  </span>
 );
 
-const SheetTab: React.FC<{
-  name: string;
-  onClick: React.MouseEventHandler;
-  selected?: boolean;
-}> = (props) => (
-  <div
-    className={classnames(
-      'flex-none mx-0.5 px-2.5 bg-white hover:cursor-pointer',
-      props.selected
-        ? 'border-solid border-b-4 border-green-800'
-        : 'hover:font-bold'
-    )}
-    onClick={props.onClick}
-  >
-    {props.name}
-  </div>
-);
 export default SheetBar;

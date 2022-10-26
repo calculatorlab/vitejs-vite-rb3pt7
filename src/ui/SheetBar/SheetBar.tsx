@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 
@@ -10,12 +10,13 @@ type Sheet = {
   selected: boolean;
 };
 
-const SheetBar: React.FC = (): JSX.Element => {
-  const sheetTabContainerRef = useRef<HTMLDivElement>(null);
-  const sheets: Sheet[] = [];
+const SheetBar = () => {
+  const sheetsContainerRef = useRef<HTMLDivElement>(null);
+
   const [sheetCounter, setSheetCounter] = useState<number>(0);
-  const [sheetDB, setSheetDB] = useState<Sheet[]>(sheets);
-  const addSheet = (): void => {
+  const [sheetDB, setSheetDB] = useState<Sheet[]>([]);
+
+  const addSheet = (sheetsContainerRef: React.RefObject<HTMLDivElement>) => {
     const newCount = sheetCounter + 1;
     setSheetCounter(newCount);
     const newSheet: Sheet = { name: `Sheet ${newCount}`, selected: true };
@@ -24,7 +25,15 @@ const SheetBar: React.FC = (): JSX.Element => {
     });
     updatedSheetDB.push(newSheet);
     setSheetDB(updatedSheetDB);
+    setTimeout(
+      () =>
+        sheetsContainerRef.current?.scrollTo({
+          left: sheetsContainerRef.current.scrollWidth,
+        }),
+      10
+    );
   };
+
   const selectSheet = (
     currentSheetName: string,
     sheetContainerRef: React.RefObject<HTMLDivElement>
@@ -37,32 +46,31 @@ const SheetBar: React.FC = (): JSX.Element => {
       left: sheetContainerRef.current.scrollWidth,
     });
   };
-  console.log(sheetTabContainerRef.current);
+
   return (
     <div className="flex-none h-8 flex items-center bg-gray-100">
-      <Scroller />
+      <Scroller sheetsContainerRef={sheetsContainerRef} />
       <div
-        ref={sheetTabContainerRef}
-        id="temp"
-        className="flex-auto flex border-solid border-2 border-gray-300 overflow-x-auto"
+        ref={sheetsContainerRef}
+        className={
+          "flex-auto flex border-solid border-2 border-gray-300 overflow-hidden"
+        }
       >
         {sheetDB.map((s) => (
           <SheetTab
             key={s.name}
             selected={s.selected}
             name={s.name}
-            onClick={() => selectSheet(s.name, sheetTabContainerRef)}
+            onClick={() => selectSheet(s.name, sheetsContainerRef)}
           />
         ))}
-        <AddSheetButton addSheetFn={addSheet} />
+        <AddSheetButton addSheetFn={() => addSheet(sheetsContainerRef)} />
       </div>
     </div>
   );
 };
 
-const AddSheetButton: React.FC<{ addSheetFn: () => void }> = ({
-  addSheetFn,
-}) => (
+const AddSheetButton = ({ addSheetFn }: { addSheetFn: () => void }) => (
   <span className="flex-none px-2.5 text-green-800 hover:scale-110">
     <AddCircleIcon onClick={addSheetFn} />
   </span>

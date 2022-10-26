@@ -19,8 +19,6 @@ const SheetTab = (props: Props) => {
       onClick={props.onClick}
     >
       {props.name}
-      {props.name}
-      {props.name}
     </div>
   );
 };
